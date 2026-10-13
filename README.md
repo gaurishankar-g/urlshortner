@@ -111,9 +111,12 @@ Create `backend/.env` from `backend/.env.example`:
 
 ```env
 FRONTEND_URL=http://localhost:5173
+JWT_SECRET=replace-with-a-long-random-secret
 ```
 
 Do not commit `.env` files. They are ignored by `.gitignore`.
+
+Use a long, random value for `JWT_SECRET`. It is used to sign and verify authentication tokens.
 
 ## Running the project
 
@@ -187,10 +190,10 @@ npm run dev
 
 1. A user logs in from the React frontend.
 2. The backend verifies the credentials.
-3. The backend creates a session ID.
-4. The session ID is sent to the browser in a cookie.
+3. The backend signs a JWT containing the user ID.
+4. The JWT is sent to the browser in an HTTP-only cookie.
 5. Axios sends that cookie with future requests using `withCredentials`.
-6. Authentication middleware resolves the user and stores the ID in `req.userId`.
+6. Authentication middleware verifies the JWT and stores the user ID in `req.userId`.
 7. URL queries use `req.userId` so users can access only their own links.
 
 ## Learning concepts
@@ -202,7 +205,7 @@ This project demonstrates:
 - Axios service modules
 - REST API design
 - Express routing and middleware
-- Cookie-based sessions
+- JWT authentication with HTTP-only cookies
 - Authentication versus authorization
 - MongoDB schemas and Mongoose queries
 - User-owned resources
@@ -215,7 +218,6 @@ This project demonstrates:
 This project is intended for learning and is not production-ready. Some improvements that can be made later:
 
 - Hash passwords with `bcrypt`
-- Store sessions in MongoDB or Redis instead of an in-memory `Map`
 - Move the MongoDB connection string into an environment variable
 - Add secure cookie options such as `httpOnly`, `sameSite`, and `secure`
 - Add stronger backend input validation
