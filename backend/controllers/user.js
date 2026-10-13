@@ -1,6 +1,12 @@
 const User = require('../models/user');
-const { v4: uuidv4 } = require('uuid');
-const { setUser, getUser, deleteUser } = require('../services/auth');
+const { generateToken } = require('../services/auth');
+
+const cookieOptions = {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 24 * 60 * 60 * 1000,
+};
 
 //signup controller
 const handleSignup = async (req, res) => {
@@ -17,9 +23,8 @@ const handleLogin = async (req, res) => {
         return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const sessionId = uuidv4();
-    setUser(sessionId, user._id); 
-    res.cookie('sessionId', sessionId);    
+    const token = generateToken(user._id);
+    res.cookie("token", token, cookieOptions);
     return res.status(200).json({ message: 'Login successful' });
 };
 
@@ -31,12 +36,7 @@ const handleGetCurrentUser = (req, res) => {
 };
 
 const handleLogout = (req, res) => {
-    const sessionId = req.cookies.sessionId;
-    if (sessionId) {
-        deleteUser(sessionId);
-    }
-
-    res.clearCookie("sessionId");
+    res.clearCookie("token", cookieOptions);
     return res.status(200).json({ message: "Logout successful" });
 };
 

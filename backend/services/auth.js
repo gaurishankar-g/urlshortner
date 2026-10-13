@@ -1,19 +1,22 @@
-const sessionIdtoUserIdMap = new Map();
+const jwt = require("jsonwebtoken");
 
-function setUser(id, userId) {
-    sessionIdtoUserIdMap.set(id, userId);
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!jwtSecret) {
+    throw new Error("JWT_SECRET is not configured. Add it to backend/.env.");
 }
 
-function getUser(id) {
-    return sessionIdtoUserIdMap.get(id);
+function generateToken(userId) {
+    return jwt.sign({ userId: userId.toString() }, jwtSecret, {
+        expiresIn: "1d",
+    });
 }
 
-function deleteUser(id) {
-    sessionIdtoUserIdMap.delete(id);
+function verifyToken(token) {
+    return jwt.verify(token, jwtSecret);
 }
 
 module.exports = {
-    setUser,
-    getUser,
-    deleteUser
+    generateToken,
+    verifyToken,
 };

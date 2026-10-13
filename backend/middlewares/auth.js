@@ -1,17 +1,20 @@
-const { getUser } = require("../services/auth");
+const { verifyToken } = require("../services/auth");
 
 
-async function restrictToLoggedInUser(req, res, next) {
-    const userUid = req.cookies.sessionId;
-    if (!userUid) {
-        return res.status(401).json({ error: 'Unauthorized' });
+function restrictToLoggedInUser(req, res, next) {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ error: "Unauthorized" });
     }
-    const userId = getUser(userUid);
-    if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+
+    try {
+        const payload = verifyToken(token);
+        req.userId = payload.userId;
+        return next();
+    } catch (error) {
+        return res.status(401).json({ error: "Invalid or expired token" });
     }
-    req.userId = userId;
-    next();
-}   
+}
 
 module.exports = restrictToLoggedInUser;
